@@ -19,7 +19,7 @@ namespace _04.WildFarm
         }
         public override bool CanEatFood(Food food)
         {
-            this.Weight+=food.Quantity;
+            this.Weight+=food.Quantity*this.Increasing;
             return true;
         }
     }
