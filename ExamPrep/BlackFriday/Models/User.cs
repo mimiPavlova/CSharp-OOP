@@ -31,24 +31,20 @@ namespace BlackFriday.Models
         {
             get
             {
-                return _email;
+                return HasDataAccess ? "hidden" : _email;
             }
             private set
             {
-                if (HasDataAccess)
+                if (!HasDataAccess)
                 {
                     if (string.IsNullOrWhiteSpace(value))
                     {
                         throw new ArgumentException(Utilities.Messages.ExceptionMessages.EmailRequired);
                     }
-                    _email = value;
                 }
-                else
-                {
-                    _email="hidden";
-                }
+                _email = value;
             }
-            
+
         }
 
         protected User(string userName,  string email,bool hasDataAccess)

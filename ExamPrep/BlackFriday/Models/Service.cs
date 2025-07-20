@@ -12,7 +12,7 @@ namespace BlackFriday.Models
         {
             get
             {
-                return base.BlackFridayPrice*0.8;
+                return base.BasePrice*0.8;
             }
         }
 
