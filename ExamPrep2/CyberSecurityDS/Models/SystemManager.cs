@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace CyberSecurityDS.Models
 {
-    public class SystemManager
+    public class SystemManager:ISystemManager
     {
         private IRepository<ICyberAttack> _attackRepository;
 

@@ -19,7 +19,7 @@ namespace CyberSecurityDS.Repositories
 
         public bool Exists(string name)
         {
-           return GetByName(name) != null;
+            return _attacks.Any(a=>a.AttackName == name);
         }
 
         public ICyberAttack GetByName(string name)

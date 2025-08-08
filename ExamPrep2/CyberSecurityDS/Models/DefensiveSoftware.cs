@@ -31,7 +31,10 @@ namespace CyberSecurityDS.Models
          }
         public int Effectiveness
         {
-            get { return _effectiveness; }
+            get
+            {
+                return _effectiveness;
+            }
 
             private set
             {
@@ -56,10 +59,11 @@ namespace CyberSecurityDS.Models
             {
                 return $"Defensive Software: {Name}, Effectiveness: {Effectiveness}, Assigned Attacks: [None]";
             }
-            return $"Defensive Software: {Name}, Effectiveness: {Effectiveness}, Assigned Attacks: {string.Join(", ", AssignedAttacks)}";
+
+            return $"Defensive Software: {Name}, Effectiveness: {Effectiveness}, Assigned Attacks: {string.Join(", ", _assignedAttacks)}";
         }
 
-        protected DefensiveSoftware(string name, int effectiveness)
+        public DefensiveSoftware(string name, int effectiveness)
         {
             Name=name;
 

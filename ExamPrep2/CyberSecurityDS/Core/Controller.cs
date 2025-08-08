@@ -1,6 +1,7 @@
 ﻿using CyberSecurityDS.Core.Contracts;
 using CyberSecurityDS.Models;
 using CyberSecurityDS.Models.Contracts;
+using CyberSecurityDS.Utilities.Messages;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,144 +12,158 @@ namespace CyberSecurityDS.Core
 {
     public class Controller : IController
     {
-        private ISystemManager _systemManager;
-        public Controller()
-        {
-            _systemManager=new SystemManager();
-        }
+        private ISystemManager _manager;
+        public Controller() => _manager=new SystemManager();
+
         public string AddCyberAttack(string attackType, string attackName, int severityLevel, string extraParam)
         {
-            if(attackType !="PhishingAttack"&&attackType!="MalwareAttack")
-            {
-                return $"{attackType} is not a valid type for the system.";
+            if (_manager.CyberAttacks.Exists(attackName))
+            { 
+                return string.Format(OutputMessages.EntryAlreadyExists, attackName);
             }
+                  
+            ICyberAttack cyberAttack = null;
 
-            if (_systemManager.CyberAttacks.Exists(attackName))
+            if (attackType=="PhishingAttack")
             {
-                return $"{attackName} already exists in the system.";
+               cyberAttack=new PhishingAttack(attackName, severityLevel, extraParam);
             }
-            ICyberAttack attack = null;
-            if (attackType=="MalwareAttack")
+            else if (attackType=="MalwareAttack")
             {
-                attack=new MalwareAttack(attackName, severityLevel, extraParam);
+                cyberAttack=new MalwareAttack(attackName, severityLevel, extraParam);
             }
-            else if (attackType=="PhishingAttack")
+            else
             {
-                attack=new PhishingAttack(attackName, severityLevel, extraParam);
+                return string.Format(OutputMessages.TypeInvalid, attackType);
             }
-            _systemManager.CyberAttacks.AddNew(attack);
-            return $"{attackType}: {attackName} is added to the system.";
-
+            _manager.CyberAttacks.AddNew(cyberAttack);
+            return string .Format(OutputMessages.EntryAddedSuccessfully, attackType, attackName);
+            
         }
 
         public string AddDefensiveSoftware(string softwareType, string softwareName, int effectiveness)
         {
-            if (softwareType!="Firewall"&&softwareType!="Antivirus")
+            if (_manager.DefensiveSoftwares.Exists(softwareName))
             {
-                return $"{softwareType} is not a valid type for the system.";
-            }
-            if (_systemManager.DefensiveSoftwares.Exists(softwareName))
-            {
-                return $"{softwareName} already exists in the system.";
+                return string.Format (OutputMessages.EntryAlreadyExists, softwareName);
             }
 
-            IDefensiveSoftware software = null;
-            if (softwareType=="Antivirus")
+            IDefensiveSoftware defensiveSoftware = null;
+            if (softwareType=="Firewall")
             {
-                software=new Antivirus(softwareName, effectiveness);
+                defensiveSoftware=new Firewall(softwareName, effectiveness);
             }
-            else if (softwareType=="Firewall")
+            else if (softwareType=="Antivirus")
             {
-                software=new Firewall(softwareName, effectiveness);
+                defensiveSoftware=new Antivirus(softwareName, effectiveness);
             }
-            _systemManager.DefensiveSoftwares.AddNew(software);
-            return $"{softwareType}: {softwareName} is added to the system.";
+            else
+            {
+                return string.Format(OutputMessages.TypeInvalid, softwareType);
+            }
+            _manager.DefensiveSoftwares.AddNew(defensiveSoftware);
+            return string.Format(OutputMessages.EntryAddedSuccessfully, softwareType, softwareName);
         }
 
         public string AssignDefense(string cyberAttackName, string defensiveSoftwareName)
         {
-            if (!_systemManager.CyberAttacks.Exists(cyberAttackName))
+           
+            ICyberAttack cyberAttack=_manager.CyberAttacks.GetByName(cyberAttackName);
+            IDefensiveSoftware defensiveSoftware=_manager.DefensiveSoftwares.GetByName(defensiveSoftwareName);
+            if(cyberAttack is null)
             {
-                return $"{cyberAttackName} does not exist in the system.";
+                return string.Format(OutputMessages.EntryNotFound, cyberAttackName);
             }
-            if (!_systemManager.DefensiveSoftwares.Exists(defensiveSoftwareName))
+            if(defensiveSoftware is null)
             {
-                return $"{defensiveSoftwareName} does not exist in the system.";
+                return string.Format(OutputMessages.EntryNotFound, defensiveSoftwareName);
             }
-            ICyberAttack cyberAttack=_systemManager.CyberAttacks.GetByName(cyberAttackName);
-            IDefensiveSoftware defensiveSoftware=_systemManager.DefensiveSoftwares.GetByName(defensiveSoftwareName);
-            var softwareWithThisAttack = _systemManager.DefensiveSoftwares.Models.FirstOrDefault(s => s.AssignedAttacks.Contains(cyberAttackName));
-            if (softwareWithThisAttack!=null)
-            {    
-                return $"{cyberAttackName} is already assigned to {softwareWithThisAttack.Name}.";
+
+            IDefensiveSoftware conflictSoftware=_manager.DefensiveSoftwares.Models.FirstOrDefault(d=>d.AssignedAttacks.Contains(cyberAttackName));
+
+            if (conflictSoftware !=null)
+            {
+
+                return string.Format(OutputMessages.AttackAlreadyAssigned, cyberAttackName, conflictSoftware.Name);
             }
             defensiveSoftware.AssignAttack(cyberAttackName);
-                return $"{cyberAttackName} is assigned to {defensiveSoftwareName}.";
+            return string.Format(OutputMessages.AttackAssignedSuccessfully, cyberAttackName, defensiveSoftwareName);
+
         }
 
         public string GenerateReport()
         {
-            StringBuilder sb= new StringBuilder();
-            sb.AppendLine("Security:");
-            var security=_systemManager.DefensiveSoftwares.Models.OrderBy(s=>s.Name).ToList();
-            foreach (var s in security)
+            var softwares=_manager.DefensiveSoftwares.Models.OrderBy(s=>s.Name).ToList();
+            StringBuilder sb = new StringBuilder();
+            sb.Append($"Security:");
+
+            foreach (var software in softwares)
             {
-                sb.AppendLine(s.ToString());
+                sb.AppendLine();
+                sb.Append(software.ToString());
             }
+            sb.AppendLine();
             sb.AppendLine("Threads:");
-            sb.AppendLine("-Mitigated:");
-            var mitigated=_systemManager.CyberAttacks.Models.Where(attack=>attack.Status==true).OrderBy(n=>n.AttackName).ToList();
-            foreach (var m in mitigated)
+
+            sb.Append("-Mitigated");
+            var mitigated=_manager.CyberAttacks.Models.Where(c=>c.Status).OrderBy(a=>a.AttackName).ToList();
+            foreach ( var attack in mitigated )
             {
-                sb.AppendLine(m.ToString());
+                sb.AppendLine();
+                sb.Append(attack.ToString());
             }
-            sb.AppendLine("-Pending:");
-            var pending=_systemManager.CyberAttacks.Models.Where(p=>!p.Status).OrderBy(n=>n.AttackName).ToList();
-            foreach(var p in pending)
+            sb.AppendLine();
+            sb.Append("-Pending");
+            var pending = _manager.CyberAttacks.Models.Where(c => !c.Status).OrderBy(a=>a.AttackName).ToList();
+            foreach (var attack in pending)
             {
-                sb.AppendLine(p.ToString());
-            }
+                sb.AppendLine();
+                sb.Append(attack.ToString());
+            } 
             return sb.ToString();
         }
 
         public string MitigateAttack(string cyberAttackName)
         {
-            if (!_systemManager.CyberAttacks.Exists(cyberAttackName))
+           ICyberAttack cyberAttack=_manager.CyberAttacks.GetByName(cyberAttackName);
+           
+            if(cyberAttack is null)
             {
-                return $"{cyberAttackName} does not exist in the system.";
+                return string.Format(OutputMessages.EntryNotFound, cyberAttackName);
             }
-            ICyberAttack cyberAttack = _systemManager.CyberAttacks.GetByName(cyberAttackName);
+            if(cyberAttack.Status==true)
+            {
+                return string.Format(OutputMessages.AttackAlreadyMitigated, cyberAttackName);
+            }
 
-            if(cyberAttack.Status)
+
+            IDefensiveSoftware? software = _manager.DefensiveSoftwares.Models.
+                   FirstOrDefault(d => d.AssignedAttacks.Contains(cyberAttackName));
+
+            if (software is null)
             {
-                return $"{cyberAttackName} is already mitigated.";
+                return string.Format(OutputMessages.AttackNotAssignedYet, cyberAttackName);
             }
-            IDefensiveSoftware software =
-                _systemManager.DefensiveSoftwares.Models.FirstOrDefault(d => d.AssignedAttacks.Contains(cyberAttackName));
+
             
-            if(software==null)
+            if((software is Firewall&&cyberAttack is MalwareAttack)||(software is Antivirus&&cyberAttack is PhishingAttack))
             {
-                return $"{cyberAttackName} is not assigned yet.";
-            }
+                if (cyberAttack.SeverityLevel<=software.Effectiveness)
+                {
+                    cyberAttack.MarkAsMitigated();
 
-            bool validPair = (software is Firewall&&cyberAttack is MalwareAttack)||
-                (software is Antivirus&&cyberAttack is PhishingAttack);
-            if (!validPair)
+                    return string.Format(OutputMessages.AttackMitigatedSuccessfully, cyberAttackName);
+                }
+                else
+                {
+                    return string.Format(OutputMessages.SoftwareNotEffectiveEnough, cyberAttackName, software.Name);
+                   
+                }
+            }
+            else
             {
-                return $"{software.GetType().Name} cannot mitigate {cyberAttack.GetType().Name}.";
+                 return string.Format(OutputMessages.CannotMitigateDueToCompatibility, software.GetType().Name,cyberAttack.GetType().Name);
             }
-            int effectivness=software.Effectiveness;
-            int level=cyberAttack.SeverityLevel;
-
-            if(effectivness>=level)
-            {
-              cyberAttack.MarkAsMitigated();
-              return  $"{cyberAttackName} is mitigated successfully.";
-            }
-            return $"{cyberAttackName} could not be mitigated by {software.Name}.";
-
-
-
         }
     }
 }

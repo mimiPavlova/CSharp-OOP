@@ -20,7 +20,7 @@ namespace CyberSecurityDS.Repositories
 
         public bool Exists(string name)
         {
-            return GetByName(name) != null;
+            return _defensiveSoftwareList.Any(x => x.Name == name);
         }
 
         public IDefensiveSoftware GetByName(string name)
