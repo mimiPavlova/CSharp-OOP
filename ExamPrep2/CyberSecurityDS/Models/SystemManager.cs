@@ -9,17 +9,20 @@ using System.Threading.Tasks;
 
 namespace CyberSecurityDS.Models
 {
-    public class SystemManager:ISystemManager
+    public class SystemManager
     {
-        private IRepository<ICyberAttack> _attacks;
-        private IRepository<IDefensiveSoftware> _softwares;
-        public IRepository<ICyberAttack> CyberAttacks => _attacks;
-        public IRepository<IDefensiveSoftware> DefensiveSoftwares => _softwares;
+        private IRepository<ICyberAttack> _attackRepository;
+
+        private IRepository<IDefensiveSoftware> _deffensiveSoftware; 
+        public IRepository<ICyberAttack> CyberAttacks => _attackRepository;
+        public IRepository<IDefensiveSoftware> DefensiveSoftwares => _deffensiveSoftware;
 
         public SystemManager()
         {
-            _attacks=new CyberAttackRepository();
-            _softwares=new DefensiveSoftwareRepository();
+            _deffensiveSoftware = new DefensiveSoftwareRepository();
+            _attackRepository=new CyberAttackRepository();
         }
+
+
     }
 }

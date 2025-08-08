@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CyberSecurityDS.Utilities.Messages;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,24 +14,23 @@ namespace CyberSecurityDS.Models
         {
             get
             {
-                return _targetMail;
+            return _targetMail;
             }
             private set
             {
-                if(string.IsNullOrWhiteSpace(value))
+                if (string.IsNullOrWhiteSpace(value))
                 {
-                    throw new ArgumentException(Utilities.Messages.ExceptionMessages.TargetMailRequired);
-
+                    throw new ArgumentException(ExceptionMessages.TargetMailRequired);
                 }
                 _targetMail = value;
             }
-        }
 
+        }
         public PhishingAttack(string attackName, int severityLevel, string targetMail) : base(attackName, severityLevel)
         {
-            TargetMail= targetMail;
+            TargetMail = targetMail;
         }
         public override string ToString()
-            => $"Attack: {AttackName}, Severity: {SeverityLevel} (Target Mail: {TargetMail})";
+        => $"Attack: {AttackName}, Severity: {SeverityLevel} (Target Mail: {TargetMail})";
     }
 }

@@ -12,25 +12,23 @@ namespace CyberSecurityDS.Repositories
     {
         private List<ICyberAttack> _attacks;
         public IReadOnlyCollection<ICyberAttack> Models => _attacks.AsReadOnly();
-
-        public CyberAttackRepository()
-        {
-            _attacks = new List<ICyberAttack>();
-        }
         public void AddNew(ICyberAttack model)
         {
-           _attacks.Add(model);
+            _attacks.Add(model);
         }
 
         public bool Exists(string name)
         {
-            ICyberAttack attack = _attacks.FirstOrDefault(a => a.AttackName==name);
-            return attack!=null; ;
+           return GetByName(name) != null;
         }
 
         public ICyberAttack GetByName(string name)
         {
             return _attacks.FirstOrDefault(a => a.AttackName==name);
+        }
+        public CyberAttackRepository()
+        {
+            _attacks = new List<ICyberAttack>();
         }
     }
 }

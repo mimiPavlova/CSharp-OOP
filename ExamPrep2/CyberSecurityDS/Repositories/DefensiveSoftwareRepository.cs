@@ -10,27 +10,27 @@ namespace CyberSecurityDS.Repositories
 {
     public class DefensiveSoftwareRepository : IRepository<IDefensiveSoftware>
     {
-        private List<IDefensiveSoftware> _software;
-        public IReadOnlyCollection<IDefensiveSoftware> Models => _software.AsReadOnly();
+        private List<IDefensiveSoftware> _defensiveSoftwareList;
+        public IReadOnlyCollection<IDefensiveSoftware> Models => _defensiveSoftwareList.AsReadOnly();
 
-        public DefensiveSoftwareRepository()
-        {
-            _software= new List<IDefensiveSoftware>();
-        }
         public void AddNew(IDefensiveSoftware model)
         {
-            _software.Add(model);
+            _defensiveSoftwareList.Add(model);
         }
 
         public bool Exists(string name)
         {
-            IDefensiveSoftware software = _software.FirstOrDefault(s=>s.Name==name);
-            return software!=null;
+            return GetByName(name) != null;
         }
 
         public IDefensiveSoftware GetByName(string name)
         {
-            return _software.FirstOrDefault(s => s.Name==name);
+            return _defensiveSoftwareList.FirstOrDefault(d => d.Name==name);
+        }
+
+        public DefensiveSoftwareRepository()
+        {
+            _defensiveSoftwareList = new List<IDefensiveSoftware>();
         }
     }
 }
