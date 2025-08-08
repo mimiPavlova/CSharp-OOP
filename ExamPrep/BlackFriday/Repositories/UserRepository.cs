@@ -12,6 +12,10 @@ namespace BlackFriday.Repositories
     {
         private List<IUser> _users;
         public IReadOnlyCollection<IUser> Models => _users.AsReadOnly();
+        public UserRepository()
+        {
+            _users = new List<IUser>();
+        }
 
         public void AddNew(IUser model)
         {
